@@ -27,33 +27,33 @@ public class ConversationService implements IConversationService {
 
     @Override
     public void createConversation(int userIdFirst, int userIdSecond) {
-        Timestamp timestamp=new Timestamp(new Date().getTime());
-        StringBuilder idConversation=new StringBuilder();
-        idConversation.append(idConversation);
-        idConversation.append(userIdFirst);
-        idConversation.append(userIdSecond);
-        Conversations conversations=new Conversations();
-        conversations.setConversationsId(new String(idConversation));
-
-        User userCreate=new User();
-        userCreate.setUserId(userIdFirst);
-        User userSecond=new User();
-        userSecond.setUserId(userIdSecond);
-        conversations.setCreatorUser(userCreate);
-
-        conversationRepository.createConversation(conversations);
-
-        Participants participants=new Participants();
-        participants.setHide(false);
-        participants.setUserParticipants(userCreate);
-        participants.setConversationsParticipants(conversations);
-        participantRepository.addParticipant(participants);
-
-        Participants participantsSecond=new Participants();
-        participantsSecond.setHide(false);
-        participantsSecond.setUserParticipants(userSecond);
-        participantsSecond.setConversationsParticipants(conversations);
-        participantRepository.addParticipant(participantsSecond);
+//        Timestamp timestamp=new Timestamp(new Date().getTime());
+//        StringBuilder idConversation=new StringBuilder();
+//        idConversation.append(idConversation);
+//        idConversation.append(userIdFirst);
+//        idConversation.append(userIdSecond);
+//        Conversations conversations=new Conversations();
+//        conversations.setConversationsId(idConversation);
+//
+//        User userCreate=new User();
+//        userCreate.setUserId(userIdFirst);
+//        User userSecond=new User();
+//        userSecond.setUserId(userIdSecond);
+//        conversations.setCreatorUser(userCreate);
+//
+//        conversationRepository.createConversation(conversations);
+//
+//        Participants participants=new Participants();
+//        participants.setHide(false);
+//        participants.setUserParticipants(userCreate);
+//        participants.setConversationsParticipants(conversations);
+//        participantRepository.addParticipant(participants);
+//
+//        Participants participantsSecond=new Participants();
+//        participantsSecond.setHide(false);
+//        participantsSecond.setUserParticipants(userSecond);
+//        participantsSecond.setConversationsParticipants(conversations);
+//        participantRepository.addParticipant(participantsSecond);
     }
 
     @Override

@@ -1,17 +1,14 @@
 package com.mobileapp.utils;
 
-import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-public class saveImageToServer {
+public class SaveImageToServer {
 
     public String saveImage(MultipartFile image,String url) {
         if (!image.isEmpty()) {

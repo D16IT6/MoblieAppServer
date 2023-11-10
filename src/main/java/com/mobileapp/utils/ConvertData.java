@@ -1,9 +1,6 @@
 package com.mobileapp.utils;
 
-import com.mobileapp.DTO.CommentDTO;
-import com.mobileapp.DTO.FriendNoConfirmDTO;
-import com.mobileapp.DTO.NotificationDTO;
-import com.mobileapp.DTO.PostDTO;
+import com.mobileapp.DTO.*;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
@@ -43,7 +40,7 @@ public class ConvertData {
     }
     public NotificationDTO convertNotificationDTO(Object[] objects){
         NotificationDTO notificationDTO=new NotificationDTO();
-        notificationDTO.setNotificationId((String) objects[0]);
+        notificationDTO.setNotificationId((Integer) objects[0]);
         notificationDTO.setPostId((Integer) objects[1]);
         notificationDTO.setFullName((String) objects[2]+" ");
         notificationDTO.setUrlAvatarUser((String)objects[3]);
@@ -61,5 +58,28 @@ public class ConvertData {
         friendNoConfirmDTO.setUrlAvatar((String) objects[4]);
         friendNoConfirmDTO.setIsFriend(false);
         return friendNoConfirmDTO;
+    }
+    public NotificationDTO convertCommentReceiverDTOToNotificationDTO(CommentReceiverDTO commentReceiverDTO,int notificationId,Timestamp timeComment){
+        NotificationDTO notificationDTO=new NotificationDTO();
+        notificationDTO.setNotificationId(notificationId);
+        notificationDTO.setPostId(commentReceiverDTO.getIdPostComment());
+        notificationDTO.setTimeNotification(timeComment);
+        notificationDTO.setUrlAvatarUser(commentReceiverDTO.getUserUrlAvatar());
+        notificationDTO.setFullName(commentReceiverDTO.getUserNameComment());
+        notificationDTO.setType("COMMENT");
+        notificationDTO.setRead(false);
+        return notificationDTO;
+    }
+    public CommentDTO convertCommentReceiverDTOToCommentDTO(CommentReceiverDTO commentReceiverDTO,Timestamp timeComment,int idComment){
+        CommentDTO commentDTO=new CommentDTO();
+        commentDTO.setIdComment(idComment);
+        commentDTO.setIdParentComment(commentReceiverDTO.getIdParentComment());
+        commentDTO.setContentComment(commentReceiverDTO.getContentComment());
+        commentDTO.setTimeComment(null);
+        commentDTO.setIdUserComment(commentReceiverDTO.getIdUserComment());
+        commentDTO.setUserNameComment(commentReceiverDTO.getUserNameComment());
+        commentDTO.setUserUrlAvatar(commentReceiverDTO.getUserUrlAvatar());
+        commentDTO.setAmountReply(0);
+        return commentDTO;
     }
 }

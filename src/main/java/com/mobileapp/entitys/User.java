@@ -26,7 +26,7 @@ public class User {
     @Column(name = "fullName", nullable = true, length = 50,columnDefinition = "nvarchar(50)")
     private String fullName;
     @Basic
-    @Column(name = "urlAvata", nullable = true, length = 100,columnDefinition = "nvarchar(100)")
+    @Column(name = "urlAvata", nullable = true, length = 100,columnDefinition = "nvarchar(255)")
     private String urlAvata;
     @Basic
     @Column(name = "email", nullable = true, length = 50)

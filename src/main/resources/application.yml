@@ -7,7 +7,7 @@ spring:
     url: jdbc:sqlserver://DESKTOP-UOQ7755:1433;database=MobileApp;encrypt=false
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

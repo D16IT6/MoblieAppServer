@@ -48,4 +48,9 @@ public class PostService implements IPostService {
     public List<PostDTO> getListPostProfile(int userId, int startGetter){
         return postRepository.getListPostProfile(userId,startGetter);
     }
+
+    @Override
+    public PostDTO getPostDetail(int postId, int userId) {
+        return postRepository.getPostDetail(postId,userId);
+    }
 }

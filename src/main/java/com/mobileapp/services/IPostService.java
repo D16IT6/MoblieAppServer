@@ -11,4 +11,5 @@ public interface IPostService {
     public boolean addNewPost(String userId,String content,String url);
     public List<Post> getListImage(String userId);
     public List<PostDTO> getListPostProfile(int userId, int startGetter);
+    PostDTO getPostDetail(int postId,int userId);
 }

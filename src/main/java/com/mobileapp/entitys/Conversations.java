@@ -11,9 +11,10 @@ import java.util.Set;
 @Data
 @Entity
 public class Conversations {
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "conversationsId", nullable = false,columnDefinition = "varchar(30)" )
-    private String conversationsId;
+    @Column(name = "conversationsId", nullable = false)
+    private int conversationsId;
     @Basic
     @Column(name = "conversationsName", nullable = true, length = 100,columnDefinition = "nvarchar(100)")
     private String conversationsName;

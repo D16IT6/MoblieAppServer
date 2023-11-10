@@ -15,4 +15,5 @@ public class ProfileDTO {
     private String email;
     private int amountFriend;
     private int amountPost;
+    private String describe;
 }

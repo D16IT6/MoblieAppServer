@@ -1,15 +1,14 @@
 package com.mobileapp.repositorys.ImplClass;
 
+import com.mobileapp.DTO.CommentReceiverDTO;
 import com.mobileapp.DTO.NotificationDTO;
-import com.mobileapp.entitys.Notification;
 import com.mobileapp.repositorys.INotificationRepository;
 import com.mobileapp.utils.ConvertData;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
+import jakarta.persistence.*;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,14 +17,34 @@ import java.util.stream.Collectors;
 public class NotificationRepository implements INotificationRepository {
     @PersistenceContext
     private EntityManager entityManager;
-    private ConvertData convertData;
+    private final ConvertData convertData;
     public NotificationRepository(){
         convertData=new ConvertData();
     }
     @Transactional
     @Override
-    public void addNotification(Notification notification){
-        entityManager.persist(notification);
+    public int addNotification(CommentReceiverDTO comment, Timestamp timestampAdd,String type){
+        try {
+            StoredProcedureQuery storedProcedureQuery=entityManager.createStoredProcedureQuery("add_notification_real_time");
+            storedProcedureQuery.registerStoredProcedureParameter("user_id_sender",Integer.class, ParameterMode.IN);
+            storedProcedureQuery.registerStoredProcedureParameter("user_id_receiver",Integer.class,ParameterMode.IN);
+            storedProcedureQuery.registerStoredProcedureParameter("post_id",Integer.class,ParameterMode.IN);
+            storedProcedureQuery.registerStoredProcedureParameter("type",String.class,ParameterMode.IN);
+            storedProcedureQuery.registerStoredProcedureParameter("time_notification", Timestamp.class,ParameterMode.IN);
+            storedProcedureQuery.registerStoredProcedureParameter("notification_id",Integer.class,ParameterMode.OUT);
+
+            storedProcedureQuery.setParameter("user_id_sender",comment.getIdUserComment());
+            storedProcedureQuery.setParameter("user_id_receiver",comment.getIdReceiverUser());
+            storedProcedureQuery.setParameter("post_id",comment.getIdPostComment());
+            storedProcedureQuery.setParameter("type",type);
+            storedProcedureQuery.setParameter("time_notification",timestampAdd);
+
+            storedProcedureQuery.execute();
+            return (int) (Integer) storedProcedureQuery.getOutputParameterValue("notification_id");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return 0;
     }
     @Transactional
     @Override

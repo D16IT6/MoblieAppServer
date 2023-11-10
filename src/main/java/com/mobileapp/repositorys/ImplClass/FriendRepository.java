@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Repository
 public class FriendRepository implements IFriendRepository{
-    private ConvertData convertData;
+    private final ConvertData convertData;
     public FriendRepository(){
         convertData=new ConvertData();
     }

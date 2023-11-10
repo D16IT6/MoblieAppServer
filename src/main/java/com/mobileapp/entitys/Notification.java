@@ -14,9 +14,10 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Notification {
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "notification_id", nullable = false,columnDefinition = "nvarchar(30)")
-    private String notificationId;
+    @Column(name = "notification_id", nullable = false)
+    private int notificationId;
     @ManyToOne
     @JoinColumn(name ="user_Id_Sender" )
     private User userSender;

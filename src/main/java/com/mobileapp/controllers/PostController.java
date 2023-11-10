@@ -2,11 +2,10 @@ package com.mobileapp.controllers;
 
 import com.mobileapp.DTO.CommentDTO;
 import com.mobileapp.DTO.PostDTO;
-import com.mobileapp.entitys.Comment;
 import com.mobileapp.entitys.Post;
 import com.mobileapp.services.IPostService;
 import com.mobileapp.services.ImplClass.CommentService;
-import com.mobileapp.utils.saveImageToServer;
+import com.mobileapp.utils.SaveImageToServer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,13 +17,13 @@ import java.util.List;
 
 @RestController
 public class PostController {
-    private saveImageToServer saveImage;
+    private final SaveImageToServer saveImage;
 
-    private IPostService postService;
-    private CommentService commentService;
+    private final IPostService postService;
+    private final CommentService commentService;
 
     public PostController(@Autowired IPostService postService, @Autowired CommentService commentService) {
-        saveImage = new saveImageToServer();
+        saveImage = new SaveImageToServer();
         this.postService = postService;
         this.commentService = commentService;
     }
@@ -74,5 +73,10 @@ public class PostController {
     public List<CommentDTO> getComment(@RequestParam(name = "postId") int postId, @RequestParam(name = "startGetter") int startGetter) {
         startGetter *= 25;
         return commentService.getListComment(postId, startGetter);
+    }
+    @GetMapping("/get-post-detail")
+    public PostDTO getPostDetail(@RequestParam(name = "postId")int postId,@RequestParam(name = "userId")int userId){
+        PostDTO postDTO=postService.getPostDetail(postId,userId);
+        return postService.getPostDetail(postId,userId);
     }
 }

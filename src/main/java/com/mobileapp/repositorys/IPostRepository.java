@@ -11,4 +11,5 @@ public interface IPostRepository {
     public boolean detetePost(int postId);
     public List<PostDTO> getListPostProfile(int userId,int startGetter);
     public List<Post> getListImageInPost(int userId);
+    PostDTO getPostDetail(int postId,int userId);
     }

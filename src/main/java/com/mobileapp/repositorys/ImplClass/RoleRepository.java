@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public class RoleRepositorys {
+public class RoleRepository {
     @PersistenceContext
     private EntityManager entityManager;
     @Transactional

@@ -36,6 +36,8 @@ BEGIN
 			SELECT f.sender_userid
             FROM [friend] AS f
             WHERE  f.is_friend = 1 and (f.receiver_userid = @user_id OR f.sender_userid = @user_id)
+			UNION
+			select @user_id
         ))
     ORDER BY p.post_time DESC
     OFFSET @start_getter ROWS
@@ -49,15 +51,19 @@ exec getPostData 3,0
 create or alter proc getInforUser @userId int
 as 
 begin
-select distinct u.user_id,u.full_name,u.url_avata,u.email ,
-	(select count(*) from [post] as p where p.id_user_create=@userId) as amount_post,
-	(select count(*) from [friend] as f where (f.receiver_userid=@userId or f.sender_userid=@userId) 
-						and f.is_friend=1) as amount_friend
+select distinct u.user_id,
+				u.full_name,
+				u.url_avata,
+				u.email,
+				(select count(*) from [post] as p where p.id_user_create=@userId) as amount_post,
+				(select count(*) from [friend] as f where (f.receiver_userid=@userId or f.sender_userid=@userId) and f.is_friend=1) as amount_friend,
+				u.user_name,
+				u.describe
 from [user] as u join [post] as p on p.id_user_create=u.user_id
 where u.user_id=@userId 
 end
 
-exec getInforUser 7
+exec getInforUser 3
 select * from post as p where p.id_user_create=7
 select * from [friend] as f where (f.receiver_userid=7 or f.sender_userid=7) 
 						and f.is_friend=1
@@ -208,8 +214,224 @@ end
 exec deletePost 10
 
 
-create or alter proc create_conversation @user_id_create int,@user_id_sercond int,
+CREATE OR ALTER PROCEDURE add_comment_real_time
+	@user_id INT,
+	@content NVARCHAR(MAX),
+	@post_id INT,
+	@parent_comment_id INT,
+	@comment_time DATETIME2(6),
+	@comment_id INT OUTPUT
+AS
+BEGIN
+	BEGIN TRY
+		INSERT INTO [comment] (parent_comment_id, user_id, content, comment_time, post_id, is_hide)
+		VALUES (@parent_comment_id, @user_id, @content, @comment_time, @post_id, 'false')
 
+		SET @comment_id = SCOPE_IDENTITY();
+	END TRY
+	BEGIN CATCH
+		-- Handle the error as needed, e.g., log the error or raise it to the caller.
+		-- You can replace the PRINT statements with your desired error handling logic.
+		PRINT 'An error occurred while adding a comment.';
+		PRINT 'Error Number: ' + CAST(ERROR_NUMBER() AS NVARCHAR(10));
+		PRINT 'Error Message: ' + ERROR_MESSAGE();
+	END CATCH
+END
+
+
+CREATE OR ALTER PROCEDURE add_notification_real_time
+	@user_id_sender INT,
+	@user_id_receiver INT,
+	@post_id INT,
+	@type VARCHAR(255),
+	@time_notification DATETIME2(6),
+	@notification_id INT OUTPUT
+AS
+BEGIN
+	BEGIN TRY
+		insert into [notification](user_id_sender,user_id_receiver,post_id,type,time_notification,is_hide,is_read)
+		values(@user_id_sender,@user_id_receiver,@post_id,@type,@time_notification,'false','false');
+		SET @notification_id = SCOPE_IDENTITY();
+	END TRY
+	BEGIN CATCH
+		-- Handle the error as needed, e.g., log the error or raise it to the caller.
+		-- You can replace the PRINT statements with your desired error handling logic.
+		PRINT 'An error occurred while adding a comment.';
+		PRINT 'Error Number: ' + CAST(ERROR_NUMBER() AS NVARCHAR(10));
+		PRINT 'Error Message: ' + ERROR_MESSAGE();
+	END CATCH
+END
+
+create or alter PROC addMessage 
+			@sender_userid INT ,
+			@conversations_id INT ,
+			@timestamp datetime2(6),
+			@content NVARCHAR(MAX),
+			@message_id INT OUTPUT
+AS 
+begin
+	BEGIN try
+		INSERT INTO dbo.message
+		(
+		    conversations_id,
+		    is_hide,
+		    sender_userid,
+		    timestamp,
+		    content
+		)
+		VALUES
+		(   
+			@conversations_id,
+		    'false',
+		    @sender_userid,
+		    @timestamp,
+		    @content
+		 )
+			
+			SET @message_id=SCOPE_IDENTITY();
+			END TRY
+	BEGIN CATCH
+			PRINT 'An error occurred while adding a comment.';
+			PRINT 'Error Number: ' + CAST(ERROR_NUMBER() AS NVARCHAR(10));
+			PRINT 'Error Message: ' + ERROR_MESSAGE();
+			END CATCH
+    END
+
+
+
+
+CREATE OR ALTER PROC getListParticipant
+    @user_id INT,
+    @start_getter INT
+AS
+BEGIN
+    WITH getListConvercation (convercation_id)
+    AS (
+        SELECT p.conversations_id
+        FROM dbo.participants AS p
+        WHERE p.userid = @user_id
+    )
+
+    SELECT
+        p.participant_id,
+        u.full_name,
+        p.userid,
+        u.url_avata,
+        newMessage.timestamp,
+        newMessage.message_id,
+        newMessage.sender_userid,
+        newMessage.content
+    FROM
+        dbo.participants AS p
+        JOIN dbo.[user] AS u ON u.user_id = p.userid
+        OUTER APPLY (
+            SELECT TOP 1
+                m.timestamp,
+                m.message_id,
+                m.sender_userid,
+                m.content
+            FROM
+                dbo.message m
+            WHERE
+                m.conversations_id IN (SELECT p.conversations_id FROM getListConvercation)
+            ORDER BY
+                m.timestamp DESC
+        ) AS newMessage
+    WHERE
+        p.conversations_id IN (SELECT p.conversations_id FROM getListConvercation)
+        AND p.userid != @user_id;
+END;
+EXEC getListParticipant 3,0
+
+--CREATE OR ALTER PROC getListParticipant
+--    @user_id INT,
+--    @start_getter INT
+--AS
+--BEGIN
+--    WITH ConversationParticipants AS (
+--        -- Select participants and conversation_id for the specified user
+--        SELECT
+--            p.participant_id,
+--            u.full_name,
+--            p.userid,
+--            u.url_avata,
+--            p.conversations_id
+--        FROM
+--            dbo.participants AS p
+--            JOIN dbo.[user] AS u ON u.user_id = p.userid
+--        WHERE
+--            p.conversations_id IN (
+--                SELECT p.conversations_id
+--                FROM dbo.participants AS p
+--                WHERE p.userid = @user_id
+--            )
+--            AND p.userid != @user_id -- Exclude the specified user
+--    )
+
+--    SELECT
+--        cp.participant_id,
+--        cp.full_name,
+--        cp.userid,
+--        cp.url_avata,
+--        m.timestamp AS latest_message_timestamp,
+--        m.message_id AS latest_message_id,
+--        m.sender_userid AS latest_message_sender_userid,
+--        m.content AS latest_message_content
+--    FROM
+--        ConversationParticipants cp
+--        OUTER APPLY (
+--            -- Select the latest message for each conversation between @user_id and cp.userid
+--            SELECT TOP 1
+--                msg.timestamp,
+--                msg.message_id,
+--                msg.sender_userid,
+--                msg.content
+--            FROM
+--                dbo.message msg
+--            WHERE
+--                (msg.sender_userid = cp.userid AND msg.conversations_id = cp.conversations_id)
+--                OR (msg.sender_userid = @user_id AND msg.conversations_id = cp.conversations_id)
+--            ORDER BY
+--                msg.timestamp DESC
+--        ) AS m
+--    ORDER BY
+--        cp.full_name; -- You can change the sorting criteria as needed
+--END;
+
+
+
+create or ALTER PROCEDURE getPostDetail
+    @post_id INT,@user_id INT
+AS
+BEGIN
+    SELECT
+        p.post_id,
+        p.content,
+        p.image_url,
+        p.post_time,
+        p.post_like,
+        u.user_id,
+        u.full_name,
+        u.url_avata,
+        (
+            SELECT COUNT(*)
+            FROM [comment] AS c
+            WHERE c.post_id = p.post_id
+        ) AS amount_comment
+		,(SELECT COUNT(*)
+            FROM [user_like_post] AS ul
+            WHERE ul.id_post_is_like = p.post_id)
+			AS amount_like
+			,(Select 1 
+            FROM [user_like_post] AS ul
+            WHERE ul.id_post_is_like = p.post_id and ul.id_user_like_post=@user_id)
+			as islike
+    FROM [post] AS p
+    JOIN [user] AS u ON p.id_user_create = u.user_id
+    WHERE p.post_id=@post_id
+END
+
+EXEC getPostDetail 6,2
 
 insert into [Role](role_id,role_name,permission)
 values ('admin','admin',1),

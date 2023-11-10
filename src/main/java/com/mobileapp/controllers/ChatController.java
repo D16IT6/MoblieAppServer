@@ -2,11 +2,10 @@ package com.mobileapp.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mobileapp.DTO.CommentReceiverDTO;
-import com.mobileapp.DTO.FriendNoConfirmDTO;
-import com.mobileapp.DTO.PostDTO;
+import com.mobileapp.DTO.*;
 import com.mobileapp.services.ImplClass.CommentService;
 import com.mobileapp.services.ImplClass.NotificationService;
+import com.mobileapp.utils.ConvertData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -21,12 +20,18 @@ import java.util.Date;
 
 @RestController
 public class ChatController {
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-    @Autowired
-    private CommentService commentService;
-    @Autowired
-    private NotificationService notificationService;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    private final CommentService commentService;
+
+    private final NotificationService notificationService;
+private ConvertData convertData;
+    public ChatController(@Autowired SimpMessagingTemplate messagingTemplate,@Autowired CommentService commentService,@Autowired NotificationService notificationService) {
+        this.messagingTemplate = messagingTemplate;
+        this.commentService = commentService;
+        this.notificationService = notificationService;
+        this.convertData=new ConvertData();
+    }
 
     @MessageMapping("/chat")
     @SendTo("/topic/public")
@@ -52,24 +57,17 @@ public class ChatController {
     }
 
     @MessageMapping("/sender-comment")
-//    @SendTo("/topic/comment")
-//    @SendToUser("/queue/comment")
     public void sendComment(@Payload CommentReceiverDTO commentReceiver, SimpMessageHeaderAccessor headerAccessor) throws JsonProcessingException {
         int userReceiverId = commentReceiver.getIdReceiverUser();
         Timestamp timeComment=new Timestamp(new Date().getTime());
-        commentService.addComment(commentReceiver.getIdPostComment(),
-                commentReceiver.getContentComment(), commentReceiver.getIdParentComment(),
-                commentReceiver.getIdUserComment(),timeComment);
 
+        CommentDTO commentDTO=commentService.addComment(commentReceiver,timeComment);
         if (userReceiverId != commentReceiver.getIdUserComment()) {
-            notificationService.addNotification(commentReceiver,timeComment);
-            commentReceiver.setTimeComment(timeComment);
-            System.out.println(commentReceiver.getTimeComment());
-//            String data = new ObjectMapper().writeValueAsString(commentReceiver);
-//            System.out.println(data);
-            messagingTemplate.convertAndSendToUser(userReceiverId + "", "/comment", commentReceiver);
+            int idNotification=notificationService.addNotification(commentReceiver,timeComment,"COMMENT");
+            NotificationDTO notificationDTO=convertData.convertCommentReceiverDTOToNotificationDTO(commentReceiver,idNotification,timeComment);
+            messagingTemplate.convertAndSendToUser(userReceiverId + "", "/comment", notificationDTO);
         }
-//        return commentReceiver;
+        messagingTemplate.convertAndSendToUser(commentReceiver.getIdUserComment()+"","/reply",commentDTO);
     }
 
     @MessageMapping("/sender-message")

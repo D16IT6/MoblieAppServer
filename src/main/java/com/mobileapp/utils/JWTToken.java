@@ -17,8 +17,11 @@ public class JWTToken {
         Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
         return Jwts.builder()
                 .setSubject(Long.toString(user.getUserId()))
-                .claim("userName",user.getFullName())
+                .claim("userName",user.getUserName())
                 .claim("urlAvata",user.getUrlAvata())
+                .claim("fullName",user.getFullName())
+                .claim("describe",user.getDescribe())
+                .claim("email",user.getEmail())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS512,KEY_SECRET)

@@ -13,7 +13,7 @@ import java.util.Set;
 public class Participants {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    @Column(name = "ParticipantID", nullable = false)
+    @Column(name = "Participant_id", nullable = false)
     private int participantId;
     @ManyToOne
     @JoinColumn(name = "conversationsId")

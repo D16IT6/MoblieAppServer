@@ -4,7 +4,7 @@ import com.mobileapp.DTO.UserDTO;
 import com.mobileapp.entitys.Role;
 import com.mobileapp.entitys.User;
 
-public class convertUser {
+public class ConvertUser {
     public static User convertUserDTOToUserRes(UserDTO userDTO){
         User user=new User();
         user.setUserName(userDTO.getUserName());
@@ -13,6 +13,7 @@ public class convertUser {
         user.setUrlAvata(userDTO.getUrlAvata());
         user.setPassWord(userDTO.getPassWord());
         user.setRole(new Role("user","user",3));
+        user.setDescribe("");
         return user;
     }
 }

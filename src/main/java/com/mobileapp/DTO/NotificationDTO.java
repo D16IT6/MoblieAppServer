@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 public class NotificationDTO {
-    private String notificationId;
+    private Integer notificationId;
     private int postId;
     private String urlAvatarUser;
     private String fullName;
